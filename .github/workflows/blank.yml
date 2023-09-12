@@ -23,7 +23,7 @@ jobs:
 
       - name: Add Issue to 'KANBAN' Project
         run: |
-          PROJECT_ID=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/VincentNadar777/Scrapy_Project/projects" | jq '.[] | select(.name == "KANBAN").id')
+          PROJECT_ID=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/VincentNadar777/Scrapy_Project/projects" | jq '.[] | select(.name == "KANBAN").id')
           if [ -z "$PROJECT_ID" ]; then
             echo "Project 'KANBAN' not found."
             exit 1
