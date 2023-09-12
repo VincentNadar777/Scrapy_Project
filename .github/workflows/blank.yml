@@ -19,7 +19,7 @@ jobs:
           curl -X POST \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -d "{\"assignees\":[\"$ISSUE_CREATOR\"]}" \
-            "https://api.github.com/repos/YourUsername/Scrapy_Project/issues/$ISSUE_NUMBER/assignees"
+            "https://api.github.com/repos/VincentNadar777/Scrapy_Project/issues/$ISSUE_NUMBER/assignees"
 
       - name: Add Issue to 'KANBAN' Project
         run: |
