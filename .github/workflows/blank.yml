@@ -1,0 +1,52 @@
+name: Auto-Assign and Move Issue
+
+on:
+  issues:
+    types:
+      - opened
+
+jobs:
+  assign-and-move:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Assign Issue Creator
+        run: |
+          ISSUE_NUMBER=$(jq -r '.issue.number' $GITHUB_EVENT_PATH)
+          ISSUE_CREATOR=$(jq -r '.issue.user.login' $GITHUB_EVENT_PATH)
+          
+          # Assign the issue creator as an assignee
+          curl -X POST \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -d "{\"assignees\":[\"$ISSUE_CREATOR\"]}" \
+            "https://api.github.com/repos/YourUsername/Scrapy_Project/issues/$ISSUE_NUMBER/assignees"
+
+      - name: Add Issue to 'KANBAN' Project
+        run: |
+          PROJECT_ID=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/YourUsername/Scrapy_Project/projects" | jq --arg name "KANBAN" '.[] | select(.name == $name).id')
+          if [ -z "$PROJECT_ID" ]; then
+            echo "Project 'KANBAN' not found."
+            exit 1
+          fi
+
+          # Find the 'VINCI' board in the 'KANBAN' project (assuming 'VINCI' is the board name)
+          BOARD_ID=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/projects/$PROJECT_ID/boards" | jq --arg name "VINCI" '.[] | select(.name == $name).id')
+          if [ -z "$BOARD_ID" ]; then
+            echo "Board 'VINCI' not found in 'KANBAN' project."
+            exit 1
+          fi
+
+          # Find the 'In Progress' column in the 'VINCI' board (assuming 'In Progress' is the column name)
+          COLUMN_ID=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/projects/boards/$BOARD_ID/columns" | jq --arg name "In Progress" '.[] | select(.name == $name).id')
+          if [ -z "$COLUMN_ID" ]; then
+            echo "Column 'In Progress' not found in 'VINCI' board."
+            exit 1
+          fi
+
+          ISSUE_NUMBER=$(jq -r '.issue.number' $GITHUB_EVENT_PATH)
+          
+          # Add the issue to the 'KANBAN' project
+          curl -X POST \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -d "{\"content_id\":$ISSUE_NUMBER,\"content_type\":\"Issue\"}" \
+            "https://api.github.com/projects/columns/$COLUMN_ID/cards"
