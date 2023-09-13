@@ -36,6 +36,12 @@ jobs:
           project_name="KANBAN"
           token="${{ secrets.GITHUB_PAT }}"
           
-          project_id=$(curl -H "Authorization: token $token" "https://api.github.com/repos/$repository/projects" | jq '.[] | select(.name == "'$project_name'").id')
+          project_id=$(curl -H "Authorization: token $token" "https://api.github.com/repos/$repository/projects" | jq -r '.[] | select(.name == "'$project_name'") | .id')
+          
+          if [ -z "$project_id" ]; then
+            echo "Project not found: $project_name"
+            exit 1
+          fi
+          
           response=$(curl -X POST -H "Authorization: token $token" -d '{"content_id":'$issue_number', "content_type":"Issue"}' "https://api.github.com/projects/$project_id/columns")
           echo "Response: $response"
