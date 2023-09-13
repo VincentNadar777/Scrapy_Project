@@ -18,13 +18,14 @@ jobs:
           echo "issue_number=${{ github.event.issue.number }}" >> $GITHUB_ENV
           echo "repository=${{ github.repository }}" >> $GITHUB_ENV
           echo "project_name=KANBAN" >> $GITHUB_ENV
+          echo "token=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" >> $GITHUB_ENV
 
       - name: Assign issue to creator
         run: |
           issue_number="${{ github.event.issue.number }}"
           repository="${{ github.repository }}"
           issue_creator="${{ github.event.issue.user.login }}"
-          token="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"
+          token="${{ env.token }}"
           
           response=$(curl -X POST -H "Authorization: token $token" -d '{"assignees":["'$issue_creator'"]}' "https://api.github.com/repos/$repository/issues/$issue_number/assignees")
           echo "Response: $response"
@@ -34,7 +35,7 @@ jobs:
           issue_number="${{ github.event.issue.number }}"
           repository="${{ github.repository }}"
           project_name="${{ env.project_name }}"
-          token="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"
+          token="${{ env.token }}"
           
           project_id=$(curl -H "Authorization: token $token" "https://api.github.com/repos/$repository/projects" | jq -r '.[] | select(.name == "'$project_name'") | .id')
           
