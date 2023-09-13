@@ -24,7 +24,7 @@ jobs:
           issue_number="${{ github.event.issue.number }}"
           repository="${{ github.repository }}"
           issue_creator="${{ github.event.issue.user.login }}"
-          token="${{ secrets.GITHUB_PAT }}"
+          token="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"  # Updated token
           
           response=$(curl -X POST -H "Authorization: token $token" -d '{"assignees":["'$issue_creator'"]}' "https://api.github.com/repos/$repository/issues/$issue_number/assignees")
           echo "Response: $response"
@@ -34,7 +34,7 @@ jobs:
           issue_number="${{ github.event.issue.number }}"
           repository="${{ github.repository }}"
           project_name="KANBAN"
-          token="${{ secrets.GITHUB_PAT }}"
+          token="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"  # Updated token
           
           project_id=$(curl -H "Authorization: token $token" "https://api.github.com/repos/$repository/projects" | jq -r '.[] | select(.name == "'$project_name'") | .id')
           
