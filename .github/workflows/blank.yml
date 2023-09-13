@@ -1,4 +1,4 @@
-name: Add Issue to Project
+name: Self-Assign and Add Issue to Project
 
 on:
   issues:
@@ -6,23 +6,35 @@ on:
       - opened
 
 jobs:
-  add_issue_to_project:
+  self_assign_and_add_to_project:
     runs-on: ubuntu-latest
 
     steps:
       - name: Check out code
         uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
 
       - name: Get issue information
         id: issue_info
         run: |
-          echo "::set-output name=issue_number::${{ github.event.issue.number }}"
-          echo "::set-output name=repository::${{ github.repository }}"
+          echo "issue_number=${{ github.event.issue.number }}" >> $GITHUB_ENV
+          echo "repository=${{ github.repository }}" >> $GITHUB_ENV
+
+      - name: Assign issue to creator
+        run: |
+          issue_number="${{ github.event.issue.number }}"
+          repository="${{ github.repository }}"
+          issue_creator="${{ github.event.issue.user.login }}"
+          token="${{ secrets.GITHUB_TOKEN }}"
+          
+          response=$(curl -X POST -H "Authorization: token $token" -d '{"assignees":["'$issue_creator'"]}' "https://api.github.com/repos/$repository/issues/$issue_number/assignees")
+          echo "Response: $response"
 
       - name: Add issue to project
         run: |
-          issue_number="${{ steps.issue_info.outputs.issue_number }}"
-          repository="${{ steps.issue_info.outputs.repository }}"
+          issue_number="${{ github.event.issue.number }}"
+          repository="${{ github.repository }}"
           project_id="2"  # Replace with your project ID
           token="${{ secrets.GITHUB_TOKEN }}"
           
