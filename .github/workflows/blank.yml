@@ -1,0 +1,30 @@
+name: Add Issue to Project
+
+on:
+  issues:
+    types:
+      - opened
+
+jobs:
+  add_issue_to_project:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Get issue information
+        id: issue_info
+        run: |
+          echo "::set-output name=issue_number::${{ github.event.issue.number }}"
+          echo "::set-output name=repository::${{ github.repository }}"
+
+      - name: Add issue to project
+        run: |
+          issue_number="${{ steps.issue_info.outputs.issue_number }}"
+          repository="${{ steps.issue_info.outputs.repository }}"
+          project_id="2"  # Replace with your project ID
+          token="${{ secrets.GITHUB_TOKEN }}"
+          
+          response=$(curl -X POST -H "Authorization: token $token" -d '{"content_id":'$issue_number', "content_type":"Issue"}' "https://api.github.com/projects/$project_id/columns")
+          echo "Response: $response"
